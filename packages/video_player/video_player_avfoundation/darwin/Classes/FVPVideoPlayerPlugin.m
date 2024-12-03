@@ -350,6 +350,9 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
     if ([AVPictureInPictureController isPictureInPictureSupported]) {
       self.pictureInPictureController =
           [[AVPictureInPictureController alloc] initWithPlayerLayer:self.playerLayer];
+      // Disable forward/backward skipping by enforcing linear playback
+      [self.pictureInPictureController setValue:[NSNumber numberWithInt:1] forKey:@"requiresLinearPlayback"];
+
       [self setAutomaticallyStartsPictureInPicture:NO];
       self.pictureInPictureController.delegate = self;
     }
