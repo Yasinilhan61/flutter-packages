@@ -141,6 +141,8 @@ static void *rateContext = &rateContext;
   if (!_disposed) {
     [self removeKeyValueObservers];
   }
+  // Remove observer to avoid leaks
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (void)addObserversForItem:(AVPlayerItem *)item player:(AVPlayer *)player {
@@ -256,6 +258,12 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
   }
   AVURLAsset *urlAsset = [AVURLAsset URLAssetWithURL:url options:options];
   AVPlayerItem *item = [AVPlayerItem playerItemWithAsset:urlAsset];
+
+   // Add observer for app becoming active
+  [[NSNotificationCenter defaultCenter] addObserver:self
+                                           selector:@selector(onAppDidBecomeActive)
+                                               name:UIApplicationDidBecomeActiveNotification
+                                             object:nil];
   
   // Force maximum video quality
   item.preferredPeakBitRate = 0; // No limit on bitrate
@@ -266,6 +274,13 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
                       displayLink:(FVPDisplayLink *)displayLink
                         avFactory:avFactory
                         registrar:registrar];
+}
+
+// onAppDidBecomeActive stops PiP
+- (void)onAppDidBecomeActive {
+  if (self.pictureInPictureController.isPictureInPictureActive) {
+    [self startOrStopPictureInPicture:NO]; // Reuse existing method
+  }
 }
 
 - (instancetype)initWithPlayerItem:(AVPlayerItem *)item
