@@ -256,6 +256,11 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
   }
   AVURLAsset *urlAsset = [AVURLAsset URLAssetWithURL:url options:options];
   AVPlayerItem *item = [AVPlayerItem playerItemWithAsset:urlAsset];
+  
+  // Force maximum video quality
+  item.preferredPeakBitRate = 0; // No limit on bitrate
+  item.preferredMaximumResolution = CGSizeMake(1920, 1080); // Set maximum resolution (e.g., 1080p)
+
   return [self initWithPlayerItem:item
                      frameUpdater:frameUpdater
                       displayLink:(FVPDisplayLink *)displayLink
