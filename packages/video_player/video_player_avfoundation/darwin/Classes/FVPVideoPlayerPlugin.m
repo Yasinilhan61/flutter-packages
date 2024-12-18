@@ -278,27 +278,23 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
 
 - (void)onAppDidBecomeActive {
   if (self.pictureInPictureController.isPictureInPictureActive) {
-    // Stop Picture-in-Picture mode
-    [self startOrStopPictureInPicture:NO];
+    // Stop Picture-in-Picture mode immediately
+    [self.pictureInPictureController stopPictureInPicture];
 
-    // Ensure player layer is still part of the view hierarchy
-    if (self.playerLayer.superlayer == nil) {
-      [self.flutterViewLayer addSublayer:self.playerLayer];
-      self.playerLayer.frame = self.flutterViewLayer.bounds;
+    // Forcefully reset PiP state
+    self.isPictureInPictureStarted = NO;
+
+    // Ensure the playerLayer is visible but without interruptions
+    self.playerLayer.opacity = 1.0; // Set full visibility
+    self.playerLayer.hidden = NO;
+
+    // Keep the video playing without any thumbnail or mini video
+    if (self.player.rate == 0) { // Ensure playback continues
+      [self.player play];
     }
-
-    // Temporarily hide the layer without stopping the video
-    self.playerLayer.opacity = 0.0;
-
-    // Gradually restore visibility to avoid flickering
-    [CATransaction begin];
-    [CATransaction setDisableActions:YES]; // Prevent implicit animations
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-      self.playerLayer.opacity = 1.0;
-    });
-    [CATransaction commit];
   }
 }
+
 
 
 - (instancetype)initWithPlayerItem:(AVPlayerItem *)item
