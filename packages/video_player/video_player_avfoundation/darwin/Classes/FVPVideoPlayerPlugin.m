@@ -276,24 +276,30 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
                         registrar:registrar];
 }
 
-// onAppDidBecomeActive stops PiP
 - (void)onAppDidBecomeActive {
   if (self.pictureInPictureController.isPictureInPictureActive) {
     // Stop Picture-in-Picture mode
     [self startOrStopPictureInPicture:NO];
 
-    // Temporarily remove the player layer to prevent overlays
-    [self.playerLayer removeFromSuperlayer];
+    // Ensure player layer is still part of the view hierarchy
+    if (self.playerLayer.superlayer == nil) {
+      [self.flutterViewLayer addSublayer:self.playerLayer];
+      self.playerLayer.frame = self.flutterViewLayer.bounds;
+    }
 
-    // Reattach the player layer after PiP stops completely
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-      if (!self.playerLayer.superlayer) {
-        [self.flutterViewLayer addSublayer:self.playerLayer];
-        self.playerLayer.frame = self.flutterViewLayer.bounds; // Reset frame
-      }
+    // Temporarily hide the layer without stopping the video
+    self.playerLayer.opacity = 0.0;
+
+    // Gradually restore visibility to avoid flickering
+    [CATransaction begin];
+    [CATransaction setDisableActions:YES]; // Prevent implicit animations
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+      self.playerLayer.opacity = 1.0;
     });
+    [CATransaction commit];
   }
 }
+
 
 - (instancetype)initWithPlayerItem:(AVPlayerItem *)item
                       frameUpdater:(FVPFrameUpdater *)frameUpdater
