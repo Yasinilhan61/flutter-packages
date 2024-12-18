@@ -278,25 +278,24 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
 
 - (void)onAppDidBecomeActive {
   if (self.pictureInPictureController.isPictureInPictureActive) {
-    // Stop Picture-in-Picture mode immediately
+    // Stop Picture-in-Picture mode
     [self.pictureInPictureController stopPictureInPicture];
+    self.isPictureInPictureStarted = NO;
 
-    // Set a small delay to hide the player layer to ensure PiP stops cleanly
-    dispatch_async(dispatch_get_main_queue(), ^{
-      self.playerLayer.opacity = 0.0; // Temporarily hide the player layer
-      
-      // Ensure the layer is visible again without black frames
-      dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        self.playerLayer.opacity = 1.0;
-        
-        // Ensure playback resumes seamlessly
-        if (_isPlaying) {
-          [_player play];
-        }
-      });
-    });
+    // Reset PiP overlay settings to zero
+    CGRect zeroRect = CGRectMake(0, 0, 0, 0);
+    [self setPictureInPictureOverlaySettings:zeroRect];
+
+    // Ensure player layer remains visible without overlay
+    self.playerLayer.opacity = 1.0;
+
+    // Resume playback without any visual interruptions
+    if (_isPlaying) {
+      [_player play];
+    }
   }
 }
+
 
 
 
