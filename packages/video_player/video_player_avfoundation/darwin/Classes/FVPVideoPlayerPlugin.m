@@ -285,6 +285,9 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
     CGRect zeroRect = CGRectMake(0, 0, 0, 0);
     [self setPictureInPictureOverlaySettings:zeroRect];
 
+     // Ensure player layer remains visible without overlay
+    self.playerLayer.opacity = 1.0;
+
     // Resume playback without any visual interruptions
     if (_isPlaying) {
       [_player play];
