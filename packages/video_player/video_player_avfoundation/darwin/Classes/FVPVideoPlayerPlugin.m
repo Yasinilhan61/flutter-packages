@@ -279,7 +279,16 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
 // onAppDidBecomeActive stops PiP
 - (void)onAppDidBecomeActive {
   if (self.pictureInPictureController.isPictureInPictureActive) {
-    [self startOrStopPictureInPicture:NO]; // Reuse existing method
+    // Stop Picture-in-Picture mode
+    [self startOrStopPictureInPicture:NO];
+
+    // Immediately hide the player layer to prevent any overlay or thumbnail
+    self.playerLayer.opacity = 0.0;
+
+    // Restore visibility with a small delay to ensure smooth transition
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+      self.playerLayer.opacity = 1.0; // Restore the player layer
+    });
   }
 }
 
